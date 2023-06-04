@@ -1,6 +1,6 @@
 object Versions {
-    const val gradle_plugin_version = "7.4.1"
-    //Test
+    const val gradle_plugin_version = "8.0.1"
+
     const val test_junit_version = "4.13.2"
     const val test_core_version = "1.5.0"
     const val test_runner_version = "1.5.2"

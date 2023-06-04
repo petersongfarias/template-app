@@ -9,7 +9,12 @@ buildscript {
         classpath(Dependencies.Gradle.kotlinPlugin)
         classpath(Dependencies.Gradle.kotlinGradlePlugin)
         classpath(Dependencies.Gradle.androidTools)
-        classpath(kotlin(Dependencies.Gradle.gradlePlugin, Versions.kotlin_version))
+        classpath(
+            kotlin(
+                Dependencies.Gradle.gradlePlugin,
+                Versions.kotlin_version,
+            ),
+        )
     }
 }
 
@@ -40,6 +45,24 @@ fun Project.configureAndroid() {
         buildToolsVersion(Config.buildToolsVersion)
         namespace = Config.applicationId
 
+        testOptions.unitTests {
+            isIncludeAndroidResources = true
+
+            all { test ->
+                with(test) {
+                    testLogging {
+                        events = setOf(
+                            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
+                            org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+                            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+                            org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT,
+                            org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR,
+                        )
+                    }
+                }
+            }
+        }
+
         defaultConfig {
             minSdk = Config.minSdkVersion
             targetSdk = Config.targetSdkVersion
@@ -64,6 +87,13 @@ fun Project.configureAndroid() {
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
         }
+
+        packagingOptions {
+            resources {
+                excludes += "META-INF/AL2.0"
+                excludes += "META-INF/LGPL2.1"
+            }
+        }
     }
 }
 
@@ -80,11 +110,28 @@ fun Project.configureAppAndroid() {
         }
 
         buildTypes {
+            getByName("debug") {
+                isMinifyEnabled = false
+                isTestCoverageEnabled = true
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android.txt"),
+                    "proguard-rules.pro",
+                )
+                testProguardFiles(
+                    getDefaultProguardFile("proguard-android.txt"),
+                    "proguardTest-rules.pro",
+                )
+            }
             getByName("release") {
                 isMinifyEnabled = true
+                isShrinkResources = true
                 proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro",
+                )
+                testProguardFiles(
+                    getDefaultProguardFile("proguard-android.txt"),
+                    "proguardTest-rules.pro",
                 )
             }
         }
